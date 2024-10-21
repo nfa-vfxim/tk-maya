@@ -7,7 +7,6 @@ from pathlib import Path
 
 import interface.data_structures
 import sgtk
-import six
 from maya import cmds, mel
 
 HookBaseClass = sgtk.get_hook_baseclass()
@@ -74,7 +73,7 @@ class MayaSessionModelPublisherPlugin(HookBaseClass):
             item: The item that is being published.
             publish_data: The data that needs to be published.
         """
-        file_path = six.ensure_str(cmds.file(query=True, sn=True))
+        file_path = cmds.file(query=True, sn=True)
         normalized_file_path = sgtk.util.ShotgunPath.normalize(file_path)
 
         work_template = item.parent.properties.get("work_template")
