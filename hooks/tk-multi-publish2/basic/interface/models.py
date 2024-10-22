@@ -5,7 +5,10 @@ Written by Mervin van Brakel, 2024.
 
 from typing import List, Union
 
-from PySide2 import QtCore
+try:
+    from PySide2 import QtCore
+except ImportError:
+    from PySide6 import QtCore
 
 from . import data_structures, maya_interfacing
 

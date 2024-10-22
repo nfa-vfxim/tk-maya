@@ -7,9 +7,12 @@ under the hood.
 Written by Mervin van Brakel, 2024
 """
 
-from PySide2 import QtCore, QtWidgets
+try:
+    from PySide2 import QtCore, QtWidgets
+except ImportError:
+    from PySide6 import QtCore, QtWidgets
 
-from . import data_structures, models, maya_interfacing
+from . import data_structures, maya_interfacing, models
 
 
 class PublishUserInterface(QtWidgets.QWidget):
