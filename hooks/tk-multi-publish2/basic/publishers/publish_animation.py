@@ -177,7 +177,7 @@ class MayaSessionAnimationPublisherPlugin(HookBaseClass):
         cmds.select(clear=True)
         cmds.select(publish_data.selection, replace=True)
         usd_command = (
-            'file -force -options ";exportUVs=1;exportSkels=none;exportSkin=none;exportBlendShapes=1'
+            'file -force -options ";exportUVs=1;exportSkels=none;exportSkin=none;exportBlendShapes=0'
             ";exportColorSets=1;defaultMeshScheme=catmullClark;defaultUSDFormat=usda;animation=1;eulerFilter"
             "=1;staticSingleSample=0;startTime="
             + str(publish_data.first_frame)
@@ -187,6 +187,7 @@ class MayaSessionAnimationPublisherPlugin(HookBaseClass):
             "convertMaterialsTo=UsdPreviewSurface;exportInstances=1;exportVisibility=1;mergeTransformAndShape=1;"
             'stripNamespaces=0;parentScope=Animation" -type "USD Export" -pr -es '
         )
+        self.parent.log_debug(f"Executing command: {usd_command}")
 
         # USD is written to a temporary file first, because for some reason the Maya USD
         # export just HATES our network drives.
@@ -208,6 +209,7 @@ class MayaSessionAnimationPublisherPlugin(HookBaseClass):
         Args:
             usd_file: The path to the USD file.
         """
+        self.parent.log_debug("Opening up USD file to give it a clean...")
         stage = Usd.Stage.Open(usd_file)
 
         for prim in stage.Traverse():
