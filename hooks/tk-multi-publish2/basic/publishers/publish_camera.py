@@ -10,6 +10,7 @@ from pathlib import Path
 import interface.data_structures
 import sgtk
 from maya import cmds, mel
+from pxr import Usd
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -159,10 +160,28 @@ class MayaSessionCameraPublisherPlugin(HookBaseClass):
             temp_file = Path(temp_directory) / Path(item.properties["path"]).name
             usd_command = usd_command + '" ' + str(temp_file).replace("\\", "/") + '";'
             mel.eval(usd_command)
+            self.set_camera_shutter_data(str(temp_file))
 
             shutil.copy2(str(temp_file), item.properties["path"])
 
         super().publish(settings, item)
+
+    def set_camera_shutter_data(self, usd_file: str) -> None:
+        """Sets the shutter open and close values so we actually get motion blur when importing our
+        cameras into Houdini.
+
+        Args:
+            usd_file: The path to the USD file.
+        """
+        self.parent.log_debug("Opening up USD file to add shutter data...")
+        stage = Usd.Stage.Open(usd_file)
+
+        for prim in stage.Traverse():
+            if prim.GetTypeName() == "Camera":
+                prim.GetAttribute("shutter:close").Set(0.25)
+                prim.GetAttribute("shutter:open").Set(-0.25)
+
+        stage.Save()
 
     def export_and_publish_camera_as_alembic(
         self, publish_data: interface.data_structures.PublishData, settings, item
