@@ -87,6 +87,11 @@ class PublishUserInterface(QtWidgets.QWidget):
         self.last_frame.setRange(0, 99999)
         self.last_frame.valueChanged.connect(self.change_last_frame)
         frame_range_layout.addWidget(self.last_frame)
+        change_frame_range_button = QtWidgets.QPushButton("Update range")
+        change_frame_range_button.clicked.connect(
+            self.change_frame_range_from_file_settings
+        )
+        frame_range_layout.addWidget(change_frame_range_button)
 
         layout.addLayout(frame_range_layout)
 
@@ -101,7 +106,7 @@ class PublishUserInterface(QtWidgets.QWidget):
         )
         self.selection.setStyleSheet("background-color: #000000;")
         selection_layout.addWidget(self.selection, 5)
-        change_selection_button = QtWidgets.QPushButton("Update")
+        change_selection_button = QtWidgets.QPushButton("Change selection")
         change_selection_button.clicked.connect(self.change_maya_selection)
         selection_layout.addWidget(change_selection_button, 1)
         layout.addLayout(selection_layout)
@@ -152,6 +157,11 @@ class PublishUserInterface(QtWidgets.QWidget):
             selection,
         )
 
+        self.publish_list.setCurrentIndex(
+            self.publish_model.index(self.publish_model.rowCount() - 1, 0)
+        )
+        self.populate_settings_widget()
+
     def remove_publish(self):
         """Removes the selected publish from the model."""
         self.publish_model.remove_publish(self.publish_list.currentIndex())
@@ -187,6 +197,16 @@ class PublishUserInterface(QtWidgets.QWidget):
         )
         stored_publish_data.last_frame = new_value
         self.publish_model.save_publish_data()
+
+    def change_frame_range_from_file_settings(self):
+        """Changes the frame range of the publish to the project frame range."""
+        frame_range = maya_interfacing.get_project_frame_range()
+
+        self.change_first_frame(frame_range[0])
+        self.change_last_frame(frame_range[1])
+
+        self.first_frame.setValue(frame_range[0])
+        self.last_frame.setValue(frame_range[1])
 
     def change_maya_selection(self):
         """Prompts the user to select a new root item for the publish."""
@@ -225,7 +245,7 @@ class PublishNameDialog(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        label = QtWidgets.QLabel("Publish name: (a-z only):")
+        label = QtWidgets.QLabel("Publish name: (a-z/A-Z only):")
         layout.addWidget(label)
 
         self.name_input = QtWidgets.QLineEdit("main")
@@ -246,9 +266,9 @@ class PublishNameDialog(QtWidgets.QDialog):
         self.validate_input()
 
     def validate_input(self):
-        """Validates the input to ensure it contains only lowercase letters."""
+        """Validates the input to ensure it contains only letters."""
         text = self.name_input.text()
-        if text.islower() and text.isalpha() and text not in self.existing_names:
+        if text.isalpha() and text not in self.existing_names and " " not in text:
             self.ok_button.setEnabled(True)
         else:
             self.ok_button.setEnabled(False)
