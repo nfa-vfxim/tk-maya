@@ -214,20 +214,24 @@ class PublishUserInterface(QtWidgets.QWidget):
 
         if len(selection) != 1:
             if len(selection) > 1:
-                error_message = "You can only select 1 root item for exporting. Make multiple publishes for multiple root items or group them together and select the group."
+                error_message = "You've selected multiple roots, which might result in weird behavior. Try to make multiple publishes for multiple root items or group them together and select the group."
             else:
                 error_message = "You need to select a root item for exporting."
+
             error_dialog = QtWidgets.QMessageBox()
             error_dialog.setIcon(QtWidgets.QMessageBox.Critical)
             error_dialog.setText(error_message)
             error_dialog.setWindowTitle("Selection Error")
             error_dialog.exec_()
-            return
+
+            # I have to add multiple root support right now as a hotfix so excuse the bad code
+            if error_message == "You need to select a root item for exporting.":
+                return
 
         stored_publish_data = self.publish_model.data(
             self.publish_list.currentIndex(), QtCore.Qt.UserRole
         )
-        stored_publish_data.selection = selection[0]
+        stored_publish_data.selection = "*+*".join(selection)
         self.publish_model.save_publish_data()
         self.populate_settings_widget()
 

@@ -175,6 +175,12 @@ class MayaSessionAnimationPublisherPlugin(HookBaseClass):
             item: The item that is being published.
         """
         cmds.select(clear=True)
+
+        if "*+*" in publish_data.selection:
+            raise ValueError(
+                "Cannot export multiple objects to USD at once. Please select one root object."
+            )
+
         cmds.select(publish_data.selection, replace=True)
         usd_command = (
             'file -force -options ";exportUVs=1;exportSkels=none;exportSkin=none;exportBlendShapes=0'
@@ -231,16 +237,29 @@ class MayaSessionAnimationPublisherPlugin(HookBaseClass):
             settings: The stored settings for the plugin.
             item: The item that is being published.
         """
+        root_arguments = []
+        if "*+*" in publish_data.selection:
+            root_arguments = [
+                f"-root {selection}"
+                for selection in publish_data.selection.split("*+*")
+            ]
+
+        else:
+            root_arguments = [f"-root {publish_data.selection}"]
+
         alembic_args = [
             "-renderableOnly",
             "-writeFaceSets",
             "-uvWrite",
             "-eulerFilter",
             "-writeVisibility",
-            f"-root {publish_data.selection}",
+        ]
+        alembic_args += root_arguments
+        alembic_args += [
             f"-fr {publish_data.first_frame} {publish_data.last_frame}",
             "-file '{}'".format(item.properties["path"].replace("\\", "/")),
         ]
+
         abc_export_cmd = f'AbcExport -j "{" ".join(alembic_args)}"'
         self.parent.log_debug(f"Executing command: {abc_export_cmd}")
         mel.eval(abc_export_cmd)
