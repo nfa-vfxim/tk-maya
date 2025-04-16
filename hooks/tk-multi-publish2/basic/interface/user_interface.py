@@ -216,7 +216,7 @@ class PublishUserInterface(QtWidgets.QWidget):
             if len(selection) > 1:
                 error_message = "You've selected multiple roots, which might result in weird behavior. Try to make multiple publishes for multiple root items or group them together and select the group."
             else:
-                error_message = "You need to select a root item for exporting."
+                error_message = "You MUST select a root item for exporting!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
             error_dialog = QtWidgets.QMessageBox()
             error_dialog.setIcon(QtWidgets.QMessageBox.Critical)
